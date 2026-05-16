@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>名片通訊錄</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0ede8;
+  --surface: #faf8f5;
+  --card: #ffffff;
+  --ink: #1a1614;
+  --ink2: #5a5450;
+  --ink3: #9a9490;
+  --teal: #2a7a72;
+  --teal-light: #e8f4f2;
+  --teal-mid: #4aada3;
+  --red: #c0392b;
+  --amber: #b8860b;
+  --green: #2a6e3f;
+  --green-light: #e8f5ed;
+  --border: #e0dbd4;
+  --shadow: 0 2px 16px rgba(26,22,20,0.08);
+  --shadow-lg: 0 8px 32px rgba(26,22,20,0.14);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--bg);
+  font-family: 'Noto Sans TC', sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--teal);
+  color: #fff;
+  padding: 52px 20px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(42,122,114,0.3);
+}
+.topbar-title {
+  font-size: 13px;
+  font-weight: 300;
+  opacity: 0.75;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+  font-family: 'DM Mono', monospace;
+}
+.topbar-name {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ── SEARCH BOX ── */
+.search-wrap {
+  background: var(--teal);
+  padding: 12px 20px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+.search-box {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  border-radius: 12px;
+  padding: 0 14px;
+  gap: 10px;
+  transition: background 0.2s;
+}
+.search-box:focus-within {
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.6);
+}
+.search-icon { font-size: 16px; opacity: 0.7; flex-shrink: 0; }
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 16px;
+  font-family: 'Noto Sans TC', sans-serif;
+  padding: 12px 0;
+  font-weight: 400;
+}
+.search-input::placeholder { color: rgba(255,255,255,0.5); }
+.clear-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.clear-btn.show { opacity: 1; }
+
+/* ── FILTER CHIPS ── */
+.filter-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+
+.filter-chip {
+  flex-shrink: 0;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--ink2);
+  cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: 'Noto Sans TC', sans-serif;
+  -webkit-appearance: none;
+}
+.filter-chip.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+.filter-chip .chip-count {
+  background: rgba(0,0,0,0.08);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+}
+.filter-chip.active .chip-count {
+  background: rgba(255,255,255,0.25);
+}
+
+/* ── FILTER DROPDOWN PANEL ── */
+.filter-panel {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  display: none;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.filter-panel.open { display: flex; }
+.filter-panel-title {
+  width: 100%;
+  font-size: 11px;
+  color: var(--ink3);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+.filter-option {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-size: 13px;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: 'Noto Sans TC', sans-serif;
+  -webkit-appearance: none;
+}
+.filter-option.selected {
+  background: var(--teal-light);
+  border-color: var(--teal);
+  color: var(--teal);
+  font-weight: 500;
+}
+
+/* ── STATS BAR ── */
+.stats-bar {
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.stats-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--ink3);
+}
+.stats-count span {
+  color: var(--teal);
+  font-weight: 500;
+  font-size: 14px;
+}
+.reset-all {
+  font-size: 12px;
+  color: var(--red);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: none;
+  border: none;
+  font-family: 'Noto Sans TC', sans-serif;
+  display: none;
+}
+.reset-all.show { display: block; }
+
+/* ── RESULT LIST ── */
+.result-list {
+  padding: 0 16px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── CONTACT CARD ── */
+.contact-card {
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  animation: slideUp 0.2s ease both;
+}
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(10px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.card-header {
+  padding: 14px 16px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+.avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+.card-main { flex: 1; min-width: 0; }
+.card-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.card-title-company {
+  font-size: 12px;
+  color: var(--ink3);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-title-company strong { color: var(--ink2); font-weight: 500; }
+.region-tag {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--teal-light);
+  color: var(--teal);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ── QUICK ACTIONS ── */
+.quick-actions {
+  display: flex;
+  border-top: 1px solid var(--border);
+}
+.action-btn {
+  flex: 1;
+  padding: 11px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  text-decoration: none;
+  background: none;
+  border: none;
+  color: var(--ink2);
+  border-right: 1px solid var(--border);
+  transition: background 0.12s;
+  -webkit-appearance: none;
+}
+.action-btn:last-child { border-right: none; }
+.action-btn:active { background: var(--bg); }
+.action-icon { font-size: 18px; }
+.action-label { font-size: 10px; color: var(--ink3); font-family: 'DM Mono', monospace; }
+
+/* ── EXPANDED DETAIL ── */
+.card-detail {
+  border-top: 1px solid var(--border);
+  display: none;
+  padding: 14px 16px;
+  gap: 10px;
+  flex-direction: column;
+  background: #fdfcfb;
+}
+.card-detail.open { display: flex; }
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.detail-icon { font-size: 14px; margin-top: 1px; flex-shrink: 0; width: 20px; text-align: center; }
+.detail-body { flex: 1; min-width: 0; }
+.detail-label { font-size: 10px; color: var(--ink3); font-family: 'DM Mono', monospace; letter-spacing: 0.06em; }
+.detail-value { font-size: 13px; color: var(--ink); margin-top: 1px; word-break: break-all; }
+.detail-value a { color: var(--teal); text-decoration: none; }
+.detail-value a:active { opacity: 0.7; }
+
+/* ── STATUS BADGE ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.status-初次接觸 { background: #e3f0fb; color: #1565c0; }
+.status-追蹤中 { background: #fff3cd; color: #856404; }
+.status-已成交 { background: var(--green-light); color: var(--green); }
+.status-已報價 { background: #f3e8ff; color: #6b21a8; }
+.status-暫停 { background: #fdecea; color: var(--red); }
+.status-長期維護 { background: var(--teal-light); color: var(--teal); }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink3);
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-text { font-size: 15px; }
+.empty-sub { font-size: 13px; margin-top: 6px; }
+
+/* ── LOADING ── */
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink3);
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── CONFIG MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,22,20,0.5);
+  z-index: 200;
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-sheet {
+  background: var(--card);
+  width: 100%;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px 40px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+}
+.modal-overlay.open .modal-sheet { transform: translateY(0); }
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.modal-label { font-size: 12px; color: var(--ink3); margin-bottom: 6px; font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
+.modal-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: 'Noto Sans TC', sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  outline: none;
+  margin-bottom: 14px;
+}
+.modal-input:focus { border-color: var(--teal); }
+.modal-hint { font-size: 12px; color: var(--ink3); line-height: 1.6; margin-bottom: 16px; background: var(--teal-light); padding: 10px 12px; border-radius: 8px; }
+.modal-btn {
+  width: 100%;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 8px 0 20px;
+  z-index: 90;
+}
+.nav-btn {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--ink3);
+  font-size: 20px;
+  font-family: 'DM Mono', monospace;
+  -webkit-appearance: none;
+}
+.nav-btn .nav-label { font-size: 10px; }
+.nav-btn.active { color: var(--teal); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-title">BUSINESS CARD</div>
+  <div class="topbar-name">名片通訊錄 📇</div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="searchInput" type="search" placeholder="搜尋姓名、公司、電話…" autocomplete="off">
+    <button class="clear-btn" id="clearSearchBtn" onclick="clearSearch()">✕</button>
+  </div>
+</div>
+
+<!-- FILTER CHIPS -->
+<div class="filter-bar" id="filterBar">
+  <button class="filter-chip active" id="chip-all" onclick="setFilter('all')">全部 <span class="chip-count" id="count-all">0</span></button>
+  <button class="filter-chip" id="chip-region" onclick="togglePanel('region')">📍 地區 ▾</button>
+  <button class="filter-chip" id="chip-industry" onclick="togglePanel('industry')">🏢 產業 ▾</button>
+  <button class="filter-chip" id="chip-status" onclick="togglePanel('status')">📊 狀態 ▾</button>
+</div>
+
+<!-- FILTER PANELS -->
+<div class="filter-panel" id="panel-region">
+  <div class="filter-panel-title">選擇地區</div>
+</div>
+<div class="filter-panel" id="panel-industry">
+  <div class="filter-panel-title">選擇產業</div>
+</div>
+<div class="filter-panel" id="panel-status">
+  <div class="filter-panel-title">選擇開發狀態</div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stats-count">共 <span id="resultCount">0</span> 筆結果</div>
+  <button class="reset-all" id="resetAllBtn" onclick="resetAll()">✕ 清除所有篩選</button>
+</div>
+
+<!-- RESULT LIST -->
+<div class="result-list" id="resultList">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div>載入中，請稍候…</div>
+    <div style="font-size:12px;margin-top:6px;color:#9a9490;">首次需設定 Google Sheets ID</div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active">
+    <span>🔍</span>
+    <span class="nav-label">搜尋</span>
+  </button>
+  <button class="nav-btn" onclick="openConfig()">
+    <span>⚙️</span>
+    <span class="nav-label">設定</span>
+  </button>
+</div>
+
+<!-- CONFIG MODAL -->
+<div class="modal-overlay" id="configModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⚙️ 連結 Google Sheets</div>
+    <div class="modal-label">SPREADSHEET ID</div>
+    <input class="modal-input" id="sheetIdInput" placeholder="貼上你的 Spreadsheet ID" />
+    <div class="modal-hint">
+      📋 如何取得 ID？<br>
+      開啟你的 Google Sheets，從網址複製中間那段：<br>
+      docs.google.com/spreadsheets/d/<strong>【這段就是ID】</strong>/edit
+    </div>
+    <button class="modal-btn" onclick="saveConfig()">✓ 儲存並載入</button>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const SHEET_NAME = "Data";
+const COL = { id:0, company:1, name:2, title:3, region:4, mobile:5, office:6, fax:7, email:8, address:9, website:10, taxid:11, industry:12, lastContact:13, status:14, note:15 };
+
+let allData = [];
+let filters = { region: null, industry: null, status: null };
+let activePanel = null;
+
+// ── INIT ──
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('sheetId');
+  if (saved) {
+    document.getElementById('sheetIdInput').value = saved;
+    loadData(saved);
+  } else {
+    openConfig();
+  }
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    const val = e.target.value;
+    document.getElementById('clearSearchBtn').classList.toggle('show', val.length > 0);
+    renderResults();
+  });
+});
+
+// ── LOAD DATA ──
+async function loadData(sheetId) {
+  showLoading();
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    const rows = json.table.rows;
+
+    allData = rows
+      .slice(1) // skip header
+      .map(r => r.c.map(c => c ? (c.f || c.v || '') : ''))
+      .filter(r => r[COL.company] || r[COL.name]);
+
+    buildFilterOptions();
+    renderResults();
+    updateCounts();
+  } catch(e) {
+    showError();
+  }
+}
+
+// ── BUILD FILTER OPTIONS ──
+function buildFilterOptions() {
+  const regions = [...new Set(allData.map(r => r[COL.region]).filter(Boolean))].sort();
+  const industries = [...new Set(allData.map(r => r[COL.industry]).filter(Boolean))].sort();
+  const statuses = [...new Set(allData.map(r => r[COL.status]).filter(Boolean))];
+
+  buildPanel('region', regions);
+  buildPanel('industry', industries);
+  buildPanel('status', statuses);
+}
+
+function buildPanel(type, options) {
+  const panel = document.getElementById(`panel-${type}`);
+  const title = panel.querySelector('.filter-panel-title');
+  panel.innerHTML = '';
+  panel.appendChild(title);
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-option';
+    btn.textContent = opt;
+    btn.onclick = () => setFilterValue(type, opt, btn);
+    panel.appendChild(btn);
+  });
+}
+
+// ── FILTER LOGIC ──
+function togglePanel(type) {
+  const panel = document.getElementById(`panel-${type}`);
+  const isOpen = panel.classList.contains('open');
+  ['region','industry','status'].forEach(t => {
+    document.getElementById(`panel-${t}`).classList.remove('open');
+  });
+  if (!isOpen) panel.classList.add('open');
+  activePanel = isOpen ? null : type;
+}
+
+function setFilterValue(type, value, btn) {
+  const isSelected = btn.classList.contains('selected');
+  const panel = document.getElementById(`panel-${type}`);
+  panel.querySelectorAll('.filter-option').forEach(b => b.classList.remove('selected'));
+
+  if (isSelected) {
+    filters[type] = null;
+    document.getElementById(`chip-${type}`).classList.remove('active');
+  } else {
+    btn.classList.add('selected');
+    filters[type] = value;
+    const chip = document.getElementById(`chip-${type}`);
+    chip.classList.add('active');
+  }
+
+  panel.classList.remove('open');
+  renderResults();
+  updateResetBtn();
+}
+
+function setFilter(type) {
+  if (type === 'all') {
+    filters = { region: null, industry: null, status: null };
+    ['region','industry','status'].forEach(t => {
+      document.getElementById(`chip-${t}`).classList.remove('active');
+      document.getElementById(`panel-${t}`).querySelectorAll('.filter-option').forEach(b => b.classList.remove('selected'));
+    });
+    document.getElementById('chip-all').classList.add('active');
+    renderResults();
+    updateResetBtn();
+  }
+}
+
+function resetAll() {
+  clearSearch();
+  setFilter('all');
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('clearSearchBtn').classList.remove('show');
+  renderResults();
+}
+
+function updateResetBtn() {
+  const hasFilter = filters.region || filters.industry || filters.status || document.getElementById('searchInput').value;
+  document.getElementById('resetAllBtn').classList.toggle('show', !!hasFilter);
+  document.getElementById('chip-all').classList.toggle('active', !filters.region && !filters.industry && !filters.status);
+}
+
+// ── RENDER ──
+function renderResults() {
+  const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+  let results = allData;
+
+  if (keyword) {
+    results = results.filter(r =>
+      r[COL.name].toLowerCase().includes(keyword) ||
+      r[COL.company].toLowerCase().includes(keyword) ||
+      r[COL.mobile].toLowerCase().includes(keyword) ||
+      r[COL.email].toLowerCase().includes(keyword) ||
+      r[COL.taxid].toString().includes(keyword)
+    );
+  }
+  if (filters.region)   results = results.filter(r => r[COL.region] === filters.region);
+  if (filters.industry) results = results.filter(r => r[COL.industry] === filters.industry);
+  if (filters.status)   results = results.filter(r => r[COL.status] === filters.status);
+
+  document.getElementById('resultCount').textContent = results.length;
+  updateResetBtn();
+
+  const list = document.getElementById('resultList');
+  if (results.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">查無符合的名片</div><div class="empty-sub">試試其他關鍵字或清除篩選</div></div>`;
+    return;
+  }
+
+  list.innerHTML = results.map((r, i) => buildCard(r, i)).join('');
+}
+
+function buildCard(r, idx) {
+  const name = r[COL.name] || '—';
+  const avatarChar = name.slice(-1);
+  const company = r[COL.company] || '';
+  const title = r[COL.title] || '';
+  const region = r[COL.region] || '';
+  const mobile = r[COL.mobile] || '';
+  const office = r[COL.office] || '';
+  const fax = r[COL.fax] || '';
+  const email = r[COL.email] || '';
+  const address = r[COL.address] || '';
+  const website = r[COL.website] || '';
+  const taxid = r[COL.taxid] || '';
+  const status = r[COL.status] || '';
+  const lastContact = r[COL.lastContact] || '';
+  const note = r[COL.note] || '';
+
+  const mobileNum = mobile.replace(/[^0-9]/g,'');
+  const addressEnc = encodeURIComponent(address);
+
+  const statusBadge = status
+    ? `<span class="status-badge status-${status}">● ${status}</span>`
+    : '';
+
+  const details = [
+    office  ? `<div class="detail-row"><span class="detail-icon">📞</span><div class="detail-body"><div class="detail-label">辦公電話</div><div class="detail-value"><a href="tel:${office}">${office}</a></div></div></div>` : '',
+    fax     ? `<div class="detail-row"><span class="detail-icon">📠</span><div class="detail-body"><div class="detail-label">傳真</div><div class="detail-value">${fax}</div></div></div>` : '',
+    email   ? `<div class="detail-row"><span class="detail-icon">✉️</span><div class="detail-body"><div class="detail-label">電子郵件</div><div class="detail-value"><a href="mailto:${email}">${email}</a></div></div></div>` : '',
+    address ? `<div class="detail-row"><span class="detail-icon">📍</span><div class="detail-body"><div class="detail-label">地址</div><div class="detail-value"><a href="https://www.google.com/maps/search/?api=1&query=${addressEnc}" target="_blank">${address}</a></div></div></div>` : '',
+    website ? `<div class="detail-row"><span class="detail-icon">🌐</span><div class="detail-body"><div class="detail-label">官網</div><div class="detail-value"><a href="${website.startsWith('http') ? website : 'https://'+website}" target="_blank">${website}</a></div></div></div>` : '',
+    taxid   ? `<div class="detail-row"><span class="detail-icon">🏷️</span><div class="detail-body"><div class="detail-label">統一編號</div><div class="detail-value">${taxid}</div></div></div>` : '',
+    status  ? `<div class="detail-row"><span class="detail-icon">📊</span><div class="detail-body"><div class="detail-label">開發狀態</div><div class="detail-value">${statusBadge}</div></div></div>` : '',
+    lastContact ? `<div class="detail-row"><span class="detail-icon">📅</span><div class="detail-body"><div class="detail-label">最後聯繫日</div><div class="detail-value">${lastContact}</div></div></div>` : '',
+    note    ? `<div class="detail-row"><span class="detail-icon">📝</span><div class="detail-body"><div class="detail-label">備註</div><div class="detail-value">${note}</div></div></div>` : '',
+  ].filter(Boolean).join('');
+
+  return `
+  <div class="contact-card" style="animation-delay:${idx * 0.03}s">
+    <div class="card-header" onclick="toggleCard(${idx})">
+      <div class="avatar">${avatarChar}</div>
+      <div class="card-main">
+        <div class="card-name">${name}</div>
+        <div class="card-title-company"><strong>${company}</strong>${title ? ' · ' + title : ''}</div>
+      </div>
+      ${region ? `<div class="region-tag">${region}</div>` : ''}
+    </div>
+    <div class="quick-actions">
+      ${mobile ? `<a class="action-btn" href="tel:${mobileNum}"><span class="action-icon">📱</span><span class="action-label">撥號</span></a>` : ''}
+      ${email  ? `<a class="action-btn" href="mailto:${email}"><span class="action-icon">✉️</span><span class="action-label">寄信</span></a>` : ''}
+      ${address ? `<a class="action-btn" href="https://www.google.com/maps/search/?api=1&query=${addressEnc}" target="_blank"><span class="action-icon">🗺️</span><span class="action-label">導航</span></a>` : ''}
+      ${website ? `<a class="action-btn" href="${website.startsWith('http') ? website : 'https://'+website}" target="_blank"><span class="action-icon">🌐</span><span class="action-label">官網</span></a>` : ''}
+    </div>
+    <div class="card-detail" id="detail-${idx}">
+      ${details}
+    </div>
+  </div>`;
+}
+
+function toggleCard(idx) {
+  const detail = document.getElementById(`detail-${idx}`);
+  detail.classList.toggle('open');
+}
+
+function updateCounts() {
+  document.getElementById('count-all').textContent = allData.length;
+}
+
+// ── STATES ──
+function showLoading() {
+  document.getElementById('resultList').innerHTML = `<div class="loading"><div class="spinner"></div><div>載入中…</div></div>`;
+}
+function showError() {
+  document.getElementById('resultList').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">⚠️</div>
+      <div class="empty-text">無法載入資料</div>
+      <div class="empty-sub">請確認 Spreadsheet ID 正確<br>且試算表已設為「任何人可檢視」</div>
+      <br>
+      <button onclick="openConfig()" style="background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;">重新設定</button>
+    </div>`;
+}
+
+// ── CONFIG ──
+function openConfig() {
+  document.getElementById('configModal').classList.add('open');
+}
+function saveConfig() {
+  const id = document.getElementById('sheetIdInput').value.trim();
+  if (!id) return;
+  // Extract ID if full URL is pasted
+  const match = id.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  const cleanId = match ? match[1] : id;
+  document.getElementById('sheetIdInput').value = cleanId;
+  localStorage.setItem('sheetId', cleanId);
+  document.getElementById('configModal').classList.remove('open');
+  loadData(cleanId);
+}
+
+// Close modal on overlay click
+document.getElementById('configModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+</script>
+</body>
+</html>
