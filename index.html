@@ -549,15 +549,13 @@ let filters = { region: null, industry: null, status: null };
 let activePanel = null;
 
 // ── INIT ──
-window.addEventListener('load', () => {
-  const saved = localStorage.getItem('sheetId');
-  if (saved) {
-    document.getElementById('sheetIdInput').value = saved;
-    loadData(saved);
-  } else {
-    openConfig();
-  }
+const DEFAULT_SHEET_ID = '1okSpD9DFC2v62TMnYyiZ8C6jx_tsa8hA';
 
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('sheetId') || DEFAULT_SHEET_ID;
+  document.getElementById('sheetIdInput').value = saved;
+  localStorage.setItem('sheetId', saved);
+  loadData(saved);
   document.getElementById('searchInput').addEventListener('input', (e) => {
     const val = e.target.value;
     document.getElementById('clearSearchBtn').classList.toggle('show', val.length > 0);
