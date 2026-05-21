@@ -95,22 +95,33 @@ body {
 /* ── CONTACT CARD ── */
 .contact-card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); animation: slideUp 0.2s ease both; }
 @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-.card-header { padding: 14px 16px 12px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+.card-header { padding: 14px 16px 14px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; position: relative; }
 .avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--teal); color: #fff; font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; letter-spacing: -0.02em; }
-.card-main { flex: 1; min-width: 0; }
+.card-main { flex: 1; min-width: 0; padding-right: 36px; }
 .card-name { font-size: 16px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
 .card-title-company { font-size: 12px; color: var(--ink3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-title-company strong { color: var(--ink2); font-weight: 500; }
-.region-tag { flex-shrink: 0; font-size: 11px; font-family: 'DM Mono', monospace; padding: 3px 8px; border-radius: 6px; background: var(--teal-light); color: var(--teal); font-weight: 500; margin-top: 2px; }
+.card-tags { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+.region-tag { flex-shrink: 0; font-size: 11px; font-family: 'DM Mono', monospace; padding: 3px 8px; border-radius: 6px; background: var(--teal-light); color: var(--teal); font-weight: 500; }
+.industry-tag { flex-shrink: 0; font-size: 11px; font-family: 'DM Mono', monospace; padding: 3px 8px; border-radius: 6px; background: #f3e8ff; color: #6b21a8; font-weight: 500; }
 
-/* ── QUICK ACTIONS ── */
-.quick-actions { display: flex; border-top: 1px solid var(--border); }
-.action-btn { flex: 1; padding: 11px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; text-decoration: none; background: none; border: none; color: var(--ink2); border-right: 1px solid var(--border); transition: background 0.12s; -webkit-appearance: none; min-height: 58px; }
-.action-btn:last-child { border-right: none; }
-.action-btn:active { background: var(--bg); }
-.action-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.action-icon svg { width: 22px; height: 22px; }
-.action-label { font-size: 10px; color: var(--ink3); font-family: 'DM Mono', monospace; white-space: nowrap; }
+/* ── CARD IMAGE BUTTON ── */
+.card-img-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--teal);
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(42,122,114,0.3);
+  transition: background 0.15s, transform 0.1s;
+  -webkit-appearance: none;
+  z-index: 2;
+}
+.card-img-btn:active { background: var(--teal-mid); transform: scale(0.93); }
+.card-img-btn svg { width: 16px; height: 16px; stroke: #fff; }
 
 /* ── EXPANDED DETAIL ── */
 .card-detail { border-top: 1px solid var(--border); display: none; padding: 14px 16px; gap: 10px; flex-direction: column; background: #fdfcfb; }
@@ -428,6 +439,7 @@ function buildCard(r, idx) {
   const lastContact= r[COL.lastContact] || '';
   const note       = r[COL.note] || '';
   const cardImage  = r[COL.cardImage] || '';
+  const industry   = r[COL.industry] || '';
 
   const mobileNum  = mobile.replace(/[^0-9]/g,'');
   const addressEnc = encodeURIComponent(address);
@@ -464,6 +476,8 @@ function buildCard(r, idx) {
     note    ? `<div class="detail-row"><span class="detail-icon">📝</span><div class="detail-body"><div class="detail-label">備註</div><div class="detail-value">${note}</div></div></div>` : '',
   ].filter(Boolean).join('');
 
+  const SVG_IMG_BTN = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`;
+
   return `
   <div class="contact-card" style="animation-delay:${idx*0.03}s">
     <div class="card-header" onclick="toggleCard(${idx})">
@@ -471,14 +485,12 @@ function buildCard(r, idx) {
       <div class="card-main">
         <div class="card-name">${name}</div>
         <div class="card-title-company"><strong>${company}</strong>${title?' · '+title:''}</div>
+        <div class="card-tags">
+          ${region?`<span class="region-tag">${region}</span>`:''}
+          ${industry?`<span class="industry-tag">${industry}</span>`:''}
+        </div>
       </div>
-      ${region?`<div class="region-tag">${region}</div>`:''}
-    </div>
-    <div class="quick-actions">
-      ${mobile?`<a class="action-btn" href="tel:${mobileNum}"><span class="action-icon">${SVG_PHONE}</span><span class="action-label">撥號</span></a>`:''}
-      ${email?`<a class="action-btn" href="mailto:${email}"><span class="action-icon">${SVG_MAIL}</span><span class="action-label">寄信</span></a>`:''}
-      ${address?`<a class="action-btn" href="https://www.google.com/maps/search/?api=1&query=${addressEnc}" target="_blank"><span class="action-icon">${SVG_MAP}</span><span class="action-label">導航</span></a>`:''}
-      ${imgUrl?`<button class="action-btn" onclick="openImgModal('${imgUrl}','${imgDirectUrl}')"><span class="action-icon">${SVG_CARD}</span><span class="action-label">名片</span></button>`:''}
+      ${imgUrl?`<button class="card-img-btn" onclick="event.stopPropagation();openImgModal('${imgUrl}','${imgDirectUrl}')">${SVG_IMG_BTN}</button>`:''}
     </div>
     <div class="card-detail" id="detail-${idx}">
       ${details}
