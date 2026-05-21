@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>名片通訊錄</title>
@@ -27,12 +27,19 @@
   --shadow-lg: 0 8px 32px rgba(26,22,20,0.14);
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
 body {
   background: var(--bg);
   font-family: 'Noto Sans TC', sans-serif;
   color: var(--ink);
   min-height: 100vh;
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
 }
 
 /* ── TOP BAR ── */
@@ -44,12 +51,14 @@ body {
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 12px rgba(42,122,114,0.3);
+  width: 100%;
+  max-width: 100vw;
 }
 .topbar-title { font-size: 13px; font-weight: 300; opacity: 0.75; letter-spacing: 0.1em; margin-bottom: 4px; font-family: 'DM Mono', monospace; }
 .topbar-name { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
 
 /* ── SEARCH BOX ── */
-.search-wrap { background: var(--teal); padding: 12px 20px 16px; position: sticky; top: 0; z-index: 99; }
+.search-wrap { background: var(--teal); padding: 12px 20px 16px; position: sticky; top: 0; z-index: 99; width: 100%; max-width: 100vw; }
 .search-box { display: flex; align-items: center; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 0 14px; gap: 10px; transition: background 0.2s; }
 .search-box:focus-within { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.6); }
 .search-icon { font-size: 16px; opacity: 0.7; flex-shrink: 0; }
@@ -59,7 +68,7 @@ body {
 .clear-btn.show { opacity: 1; }
 
 /* ── FILTER CHIPS ── */
-.filter-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 16px; display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.filter-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 16px; display: flex; gap: 8px; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; scrollbar-width: none; width: 100%; max-width: 100vw; }
 .filter-bar::-webkit-scrollbar { display: none; }
 .filter-chip { flex-shrink: 0; background: var(--card); border: 1.5px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 13px; color: var(--ink2); cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap; transition: all 0.15s; font-family: 'Noto Sans TC', sans-serif; -webkit-appearance: none; }
 .filter-chip.active { background: var(--teal); border-color: var(--teal); color: #fff; }
@@ -81,7 +90,7 @@ body {
 .reset-all.show { display: block; }
 
 /* ── RESULT LIST ── */
-.result-list { padding: 0 16px 32px; display: flex; flex-direction: column; gap: 10px; }
+.result-list { padding: 0 16px 32px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 100vw; overflow-x: hidden; }
 
 /* ── CONTACT CARD ── */
 .contact-card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); animation: slideUp 0.2s ease both; }
@@ -290,7 +299,7 @@ async function loadData(sheetId) {
     const rows = json.table.rows;
     allData = rows.slice(1)
       .map(r => r.c.map(c => c ? (c.f || c.v || '') : ''))
-      .filter(r => r[COL.company] || r[COL.name]);
+      .filter(r => r.some(cell => cell !== '' && cell !== null && cell !== undefined));
     buildFilterOptions();
     renderResults();
     updateCounts();
