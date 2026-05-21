@@ -105,11 +105,12 @@ body {
 
 /* ── QUICK ACTIONS ── */
 .quick-actions { display: flex; border-top: 1px solid var(--border); }
-.action-btn { flex: 1; padding: 11px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; text-decoration: none; background: none; border: none; color: var(--ink2); border-right: 1px solid var(--border); transition: background 0.12s; -webkit-appearance: none; }
+.action-btn { flex: 1; padding: 11px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; text-decoration: none; background: none; border: none; color: var(--ink2); border-right: 1px solid var(--border); transition: background 0.12s; -webkit-appearance: none; min-height: 58px; }
 .action-btn:last-child { border-right: none; }
 .action-btn:active { background: var(--bg); }
-.action-icon { font-size: 18px; }
-.action-label { font-size: 10px; color: var(--ink3); font-family: 'DM Mono', monospace; }
+.action-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.action-icon svg { width: 22px; height: 22px; }
+.action-label { font-size: 10px; color: var(--ink3); font-family: 'DM Mono', monospace; white-space: nowrap; }
 
 /* ── EXPANDED DETAIL ── */
 .card-detail { border-top: 1px solid var(--border); display: none; padding: 14px 16px; gap: 10px; flex-direction: column; background: #fdfcfb; }
@@ -431,14 +432,21 @@ function buildCard(r, idx) {
   const mobileNum  = mobile.replace(/[^0-9]/g,'');
   const addressEnc = encodeURIComponent(address);
 
-  // 轉換 Google Drive 連結為直接顯示格式
+  // SVG 圖示定義
+  const SVG_PHONE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>`;
+  const SVG_MAIL  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`;
+  const SVG_MAP   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+  const SVG_CARD  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>`;
+
+  // 轉換 Google Drive 連結 → 使用 thumbnail API（可在 iframe 內顯示）
   let imgUrl = '';
+  let imgDirectUrl = '';
   if (cardImage) {
     const matchId = cardImage.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (matchId) {
-      imgUrl = `https://drive.google.com/uc?export=view&id=${matchId[1]}`;
-    } else if (cardImage.includes('uc?export=view')) {
-      imgUrl = cardImage;
+    const fileId = matchId ? matchId[1] : null;
+    if (fileId) {
+      imgUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
+      imgDirectUrl = `https://drive.google.com/file/d/${fileId}/view`;
     }
   }
 
@@ -467,10 +475,10 @@ function buildCard(r, idx) {
       ${region?`<div class="region-tag">${region}</div>`:''}
     </div>
     <div class="quick-actions">
-      ${mobile?`<a class="action-btn" href="tel:${mobileNum}"><span class="action-icon">📱</span><span class="action-label">撥號</span></a>`:''}
-      ${email?`<a class="action-btn" href="mailto:${email}"><span class="action-icon">✉️</span><span class="action-label">寄信</span></a>`:''}
-      ${address?`<a class="action-btn" href="https://www.google.com/maps/search/?api=1&query=${addressEnc}" target="_blank"><span class="action-icon">🗺️</span><span class="action-label">導航</span></a>`:''}
-      ${imgUrl?`<button class="action-btn" onclick="openImgModal('${imgUrl}')"><span class="action-icon">🪪</span><span class="action-label">名片</span></button>`:''}
+      ${mobile?`<a class="action-btn" href="tel:${mobileNum}"><span class="action-icon">${SVG_PHONE}</span><span class="action-label">撥號</span></a>`:''}
+      ${email?`<a class="action-btn" href="mailto:${email}"><span class="action-icon">${SVG_MAIL}</span><span class="action-label">寄信</span></a>`:''}
+      ${address?`<a class="action-btn" href="https://www.google.com/maps/search/?api=1&query=${addressEnc}" target="_blank"><span class="action-icon">${SVG_MAP}</span><span class="action-label">導航</span></a>`:''}
+      ${imgUrl?`<button class="action-btn" onclick="openImgModal('${imgUrl}','${imgDirectUrl}')"><span class="action-icon">${SVG_CARD}</span><span class="action-label">名片</span></button>`:''}
     </div>
     <div class="card-detail" id="detail-${idx}">
       ${details}
@@ -487,7 +495,7 @@ function updateCounts() {
 }
 
 // ── IMAGE MODAL ──
-function openImgModal(imgUrl) {
+function openImgModal(imgUrl, directUrl) {
   const modal = document.getElementById('imgModal');
   const inner = document.getElementById('imgModalInner');
   inner.innerHTML = `<div class="img-modal-loading"><div class="spinner"></div><div>載入名片圖片…</div></div>`;
@@ -497,7 +505,7 @@ function openImgModal(imgUrl) {
     inner.innerHTML = `<button class="img-modal-close" onclick="closeImgModal()">✕</button><img src="${imgUrl}" alt="名片圖片">`;
   };
   img.onerror = () => {
-    inner.innerHTML = `<div class="img-modal-loading"><div style="font-size:32px">⚠️</div><div style="color:#f85149">無法載入圖片</div><div style="font-size:11px;margin-top:4px">請確認 Drive 分享權限</div><button onclick="closeImgModal()" style="margin-top:14px;background:var(--teal);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;cursor:pointer;">關閉</button></div>`;
+    inner.innerHTML = `<div class="img-modal-loading"><div style="font-size:32px">⚠️</div><div style="color:#f85149;margin-bottom:6px">無法載入圖片</div><a href="${directUrl}" target="_blank" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block;">在 Drive 開啟</a><button onclick="closeImgModal()" style="display:block;margin:10px auto 0;background:none;border:none;color:#9a9490;font-size:12px;cursor:pointer;">關閉</button></div>`;
   };
   img.src = imgUrl;
 }
