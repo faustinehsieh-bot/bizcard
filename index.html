@@ -96,7 +96,9 @@ body {
 .contact-card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); animation: slideUp 0.2s ease both; }
 @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 .card-header { padding: 14px 16px 14px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; position: relative; }
-.avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--teal); color: #fff; font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; letter-spacing: -0.02em; }
+.avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--teal); color: #fff; font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; letter-spacing: -0.02em; }
+.avatar-id { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--ink); font-weight: 500; line-height: 1; }
 .card-main { flex: 1; min-width: 0; padding-right: 36px; }
 .card-name { font-size: 16px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
 .card-title-company { font-size: 12px; color: var(--ink3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -425,6 +427,7 @@ function renderResults() {
 
 function buildCard(r, idx) {
   const name       = r[COL.name] || '—';
+  const cardId     = r[COL.id] || '';
   const company    = r[COL.company] || '';
   const title      = r[COL.title] || '';
   const region     = r[COL.region] || '';
@@ -480,8 +483,11 @@ function buildCard(r, idx) {
 
   return `
   <div class="contact-card" style="animation-delay:${idx*0.03}s">
-    <div class="card-header" onclick="toggleCard(${idx})">
-      <div class="avatar">${name.slice(-1)}</div>
+    <div class="card-header" onclick="toggleCard(${idx}, this)">
+      <div class="avatar-wrap">
+        <div class="avatar">${name.slice(-1)}</div>
+        ${cardId?`<span class="avatar-id">#${cardId}</span>`:''}
+      </div>
       <div class="card-main">
         <div class="card-name">${name}</div>
         <div class="card-title-company"><strong>${company}</strong>${title?' · '+title:''}</div>
@@ -498,8 +504,23 @@ function buildCard(r, idx) {
   </div>`;
 }
 
-function toggleCard(idx) {
-  document.getElementById(`detail-${idx}`).classList.toggle('open');
+function toggleCard(idx, headerEl) {
+  const detail = document.getElementById(`detail-${idx}`);
+  const isOpen = detail.classList.contains('open');
+  detail.classList.toggle('open');
+  if (!isOpen) {
+    // 展開後等動畫完成再捲動，讓整張卡片盡量完整顯示
+    setTimeout(() => {
+      const card = headerEl.closest('.contact-card');
+      const cardRect = card.getBoundingClientRect();
+      const detailHeight = detail.scrollHeight;
+      const viewportHeight = window.innerHeight;
+      const cardBottom = cardRect.top + cardRect.height + detailHeight;
+      if (cardBottom > viewportHeight * 0.85) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
+  }
 }
 
 function updateCounts() {
