@@ -226,7 +226,12 @@ body {
 }
 .pw-input:focus { border-color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.18); }
 .pw-input::placeholder { color: rgba(255,255,255,0.4); letter-spacing: 0.05em; font-size: 14px; }
-.pw-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.6); font-size: 18px; padding: 4px; }
+.pw-toggle { 
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%); 
+  background: none; border: none; cursor: pointer; padding: 6px;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 0;
+}
 .pw-btn { width: 100%; max-width: 320px; background: #fff; color: var(--teal); border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer; transition: opacity 0.15s; }
 .pw-btn:active { opacity: 0.85; }
 .pw-error { margin-top: 12px; font-size: 13px; color: #ffcdd2; opacity: 0; transition: opacity 0.2s; text-align: center; }
@@ -365,8 +370,8 @@ function togglePwVisibility() {
   const inp = document.getElementById('pwInput');
   const btn = document.getElementById('pwToggle');
   const isVisible = btn.getAttribute('data-visible') === 'true';
-  const SVG_VIEW = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-  const SVG_HIDE = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+  const SVG_VIEW = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const SVG_HIDE = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
   if (!isVisible) {
     inp.type = 'text';
     btn.innerHTML = SVG_HIDE;
@@ -375,10 +380,6 @@ function togglePwVisibility() {
     inp.type = 'password';
     btn.innerHTML = SVG_VIEW;
     btn.setAttribute('data-visible', 'false');
-  }
-} else {
-    inp.type = 'password';
-    img.src = VIEW_SRC;
   }
 }
 
