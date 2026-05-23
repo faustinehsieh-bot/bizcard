@@ -42,21 +42,6 @@ body {
   position: relative;
 }
 
-/* ── TOP BAR ── */
-.topbar {
-  background: var(--teal);
-  color: #fff;
-  padding: 14px 20px 14px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 12px rgba(42,122,114,0.3);
-  width: 100%;
-  max-width: 100vw;
-}
-.topbar-title { display: none; }
-.topbar-name { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
-
 /* ── SEARCH BOX ── */
 .search-wrap { background: var(--teal); padding: 8px 16px 10px; position: sticky; top: 0; z-index: 99; width: 100%; max-width: 100vw; }
 .search-box { display: flex; align-items: center; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 0 14px; gap: 10px; transition: background 0.2s; }
@@ -205,14 +190,53 @@ body {
 .modal-input:focus { border-color: var(--teal); }
 .modal-hint { font-size: 12px; color: var(--ink3); line-height: 1.6; margin-bottom: 16px; background: var(--teal-light); padding: 10px 12px; border-radius: 8px; }
 .modal-btn { width: 100%; background: var(--teal); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer; }
+
+/* ── PASSWORD SCREEN ── */
+.pw-screen {
+  position: fixed; inset: 0;
+  background: var(--teal);
+  z-index: 999;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 32px;
+}
+.pw-screen.hidden { display: none; }
+.pw-logo { font-size: 52px; margin-bottom: 16px; }
+.pw-title { font-family: 'Noto Sans TC', sans-serif; font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.pw-sub { font-size: 13px; color: rgba(255,255,255,0.65); margin-bottom: 36px; }
+.pw-input-wrap { width: 100%; max-width: 320px; position: relative; margin-bottom: 14px; }
+.pw-input {
+  width: 100%; padding: 14px 48px 14px 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 12px; background: rgba(255,255,255,0.12);
+  color: #fff; font-size: 20px; font-family: 'DM Mono', monospace;
+  letter-spacing: 0.25em; outline: none; transition: border-color 0.2s;
+}
+.pw-input:focus { border-color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.18); }
+.pw-input::placeholder { color: rgba(255,255,255,0.4); letter-spacing: 0.05em; font-size: 14px; }
+.pw-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.6); font-size: 18px; padding: 4px; }
+.pw-btn { width: 100%; max-width: 320px; background: #fff; color: var(--teal); border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; font-family: 'Noto Sans TC', sans-serif; cursor: pointer; transition: opacity 0.15s; }
+.pw-btn:active { opacity: 0.85; }
+.pw-error { margin-top: 12px; font-size: 13px; color: #ffcdd2; opacity: 0; transition: opacity 0.2s; text-align: center; }
+.pw-error.show { opacity: 1; }
+.pw-hint { margin-top: 28px; font-size: 11px; color: rgba(255,255,255,0.3); font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="topbar-title">BUSINESS CARD</div>
-  <div class="topbar-name">名片通訊錄 📇</div>
+<!-- PASSWORD SCREEN -->
+<div class="pw-screen" id="pwScreen">
+  <div class="pw-logo">📇</div>
+  <div class="pw-title">名片通訊錄</div>
+  <div class="pw-sub">請輸入密碼以繼續</div>
+  <div class="pw-input-wrap">
+    <input class="pw-input" id="pwInput" type="password" placeholder="輸入密碼" autocomplete="off"
+      onkeydown="if(event.key==='Enter')checkPassword()">
+    <button class="pw-toggle" onclick="togglePwVisibility()" id="pwToggle">👁</button>
+  </div>
+  <button class="pw-btn" onclick="checkPassword()">進入</button>
+  <div class="pw-error" id="pwError">密碼錯誤，請再試一次</div>
+  <div class="pw-hint">TIB BUSINESS CARD SYSTEM</div>
 </div>
 
 <!-- SEARCH -->
@@ -288,8 +312,56 @@ let allData = [];
 let filters = { region: null, industry: null, status: null };
 let activePanel = null;
 
+// ── PASSWORD ──
+const PASSWORD_HASH = '5429fbf84a2b2ae27c2e7c7e3119e8015f3fdd45b06ba56e55b1f6542bc6c88b'; // 預設密碼: password，請修改
+
+async function hashString(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function checkPassword() {
+  const input = document.getElementById('pwInput').value;
+  const hash = await hashString(input);
+  if (hash === PASSWORD_HASH) {
+    const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30天
+    localStorage.setItem('bizcard_auth', JSON.stringify({ ok: true, expiry }));
+    document.getElementById('pwScreen').classList.add('hidden');
+    initApp();
+  } else {
+    const err = document.getElementById('pwError');
+    err.classList.add('show');
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+    setTimeout(() => err.classList.remove('show'), 2500);
+  }
+}
+
+function checkAuth() {
+  try {
+    const data = JSON.parse(localStorage.getItem('bizcard_auth'));
+    return data && data.ok && Date.now() < data.expiry;
+  } catch { return false; }
+}
+
+function togglePwVisibility() {
+  const inp = document.getElementById('pwInput');
+  const btn = document.getElementById('pwToggle');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
 // ── INIT ──
 window.addEventListener('load', () => {
+  if (checkAuth()) {
+    document.getElementById('pwScreen').classList.add('hidden');
+    initApp();
+  } else {
+    setTimeout(() => document.getElementById('pwInput').focus(), 300);
+  }
+});
+
+function initApp() {
   const saved = localStorage.getItem('sheetId') || DEFAULT_SHEET_ID;
   document.getElementById('sheetIdInput').value = saved;
   localStorage.setItem('sheetId', saved);
@@ -300,7 +372,7 @@ window.addEventListener('load', () => {
     document.getElementById('clearSearchBtn').classList.toggle('show', val.length > 0);
     renderResults();
   });
-});
+}
 
 // ── LOAD DATA ──
 async function loadData(sheetId) {
