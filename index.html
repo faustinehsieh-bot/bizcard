@@ -327,7 +327,7 @@ const COL = {
   id:0, company:1, name:2, title:3, region:4,
   mobile:5, office:6, fax:7, email:8, address:9,
   website:10, taxid:11, industry:12,
-  lastContact:13, status:14, note:15, cardImage:16
+  lastContact:13, status:14, relationship:15, note:16, cardImage:17
 };
 
 let allData = [];
@@ -544,6 +544,7 @@ function buildCard(r, idx) {
   const taxid      = r[COL.taxid] || '';
   const status     = r[COL.status] || '';
   const lastContact= r[COL.lastContact] || '';
+  const relationship = r[COL.relationship] || '';
   const note       = r[COL.note] || '';
   const cardImage  = r[COL.cardImage] || '';
   const industry   = r[COL.industry] || '';
@@ -580,6 +581,7 @@ function buildCard(r, idx) {
     taxid   ? `<div class="detail-row"><span class="detail-icon">🏷️</span><div class="detail-body"><div class="detail-label">統一編號</div><div class="detail-value">${taxid}</div></div></div>` : '',
     status  ? `<div class="detail-row"><span class="detail-icon">📊</span><div class="detail-body"><div class="detail-label">開發狀態</div><div class="detail-value">${statusBadge}</div></div></div>` : '',
     lastContact ? `<div class="detail-row"><span class="detail-icon">📅</span><div class="detail-body"><div class="detail-label">最後聯繫日</div><div class="detail-value">${lastContact}</div></div></div>` : '',
+    relationship ? `<div class="detail-row"><span class="detail-icon">🤝</span><div class="detail-body"><div class="detail-label">關係維護紀錄</div><div class="detail-value">${relationship}</div></div></div>` : '',
     note    ? `<div class="detail-row"><span class="detail-icon">📝</span><div class="detail-body"><div class="detail-label">備註</div><div class="detail-value">${note}</div></div></div>` : '',
   ].filter(Boolean).join('');
 
