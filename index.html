@@ -96,9 +96,9 @@ body {
 .avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
 .avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--teal); color: #fff; font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; letter-spacing: -0.02em; }
 .avatar-id { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--ink); font-weight: 500; line-height: 1; }
-.card-main { flex: 1; min-width: 0; padding-right: 36px; }
+.card-main { flex: 1; min-width: 0; overflow: hidden; padding-right: 36px; }
 .card-name { font-size: 16px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
-.card-title-company { font-size: 12px; color: var(--ink3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-title-company { font-size: 12px; color: var(--ink3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .card-title-company strong { color: var(--ink2); font-weight: 500; }
 .card-tags { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
 .region-tag { flex-shrink: 0; font-size: 11px; font-family: 'DM Mono', monospace; padding: 3px 8px; border-radius: 6px; background: var(--teal-light); color: var(--teal); font-weight: 500; }
