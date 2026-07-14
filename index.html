@@ -265,7 +265,7 @@ body {
 <div class="search-wrap">
   <div class="search-box">
     <span class="search-icon">🔍</span>
-    <input class="search-input" id="searchInput" type="search" placeholder="搜尋姓名、公司、電話…" autocomplete="off">
+    <input class="search-input" id="searchInput" type="search" placeholder="搜尋姓名、公司、地址…" autocomplete="off">
     <button class="clear-btn" id="clearSearchBtn" onclick="clearSearch()">✕</button>
   </div>
 </div>
@@ -513,7 +513,8 @@ function renderResults() {
       r[COL.company].toLowerCase().includes(keyword) ||
       r[COL.mobile].toLowerCase().includes(keyword) ||
       r[COL.email].toLowerCase().includes(keyword) ||
-      r[COL.taxid].toString().includes(keyword)
+      r[COL.taxid].toString().includes(keyword) ||
+      r[COL.address].toLowerCase().includes(keyword)
     );
   }
   if (filters.region)   results = results.filter(r => r[COL.region] === filters.region);
