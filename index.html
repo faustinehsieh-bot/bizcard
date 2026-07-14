@@ -324,10 +324,10 @@ body {
 const SHEET_NAME = "Data";
 const DEFAULT_SHEET_ID = '1okSpD9DFC2v62TMnYyiZ8C6jx_tsa8hA';
 const COL = {
-  id:0, company:1, name:2, title:3, region:4,
-  mobile:5, office:6, fax:7, lineId:8, email:9, address:10,
-  website:11, taxid:12, industry:13,
-  lastContact:14, status:15, relationship:16, note:17, cardImage:18
+  id:0, company:1, name:2, title:3, subTitle:4, region:5,
+  mobile:6, office:7, fax:8, lineId:9, email:10, address:11,
+  website:12, taxid:13, industry:14,
+  lastContact:15, status:16, relationship:17, note:18, cardImage:19
 };
 
 let allData = [];
@@ -534,6 +534,7 @@ function buildCard(r, idx) {
   const cardId     = r[COL.id] || '';
   const company    = r[COL.company] || '';
   const title      = r[COL.title] || '';
+  const subTitle   = r[COL.subTitle] || '';
   const region     = r[COL.region] || '';
   const mobile     = r[COL.mobile] || '';
   const office     = r[COL.office] || '';
@@ -574,6 +575,8 @@ function buildCard(r, idx) {
   const statusBadge = status ? `<span class="status-badge status-${status}">● ${status}</span>` : '';
 
   const details = [
+    title    ? `<div class="detail-row"><span class="detail-icon">💼</span><div class="detail-body"><div class="detail-label">主職稱</div><div class="detail-value">${title}</div></div></div>` : '',
+    subTitle ? `<div class="detail-row"><span class="detail-icon">💼</span><div class="detail-body"><div class="detail-label">其他職稱</div><div class="detail-value">${subTitle}</div></div></div>` : '',
     office  ? `<div class="detail-row"><span class="detail-icon">📞</span><div class="detail-body"><div class="detail-label">辦公電話</div><div class="detail-value"><a href="tel:${office}">${office}</a></div></div></div>` : '',
     fax     ? `<div class="detail-row"><span class="detail-icon">📠</span><div class="detail-body"><div class="detail-label">傳真</div><div class="detail-value">${fax}</div></div></div>` : '',
     lineId  ? `<div class="detail-row"><span class="detail-icon">💬</span><div class="detail-body"><div class="detail-label">LINE ID</div><div class="detail-value">${lineId}</div></div></div>` : '',
