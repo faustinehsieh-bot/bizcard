@@ -325,9 +325,9 @@ const SHEET_NAME = "Data";
 const DEFAULT_SHEET_ID = '1okSpD9DFC2v62TMnYyiZ8C6jx_tsa8hA';
 const COL = {
   id:0, company:1, name:2, title:3, region:4,
-  mobile:5, office:6, fax:7, email:8, address:9,
-  website:10, taxid:11, industry:12,
-  lastContact:13, status:14, relationship:15, note:16, cardImage:17
+  mobile:5, office:6, fax:7, lineId:8, email:9, address:10,
+  website:11, taxid:12, industry:13,
+  lastContact:14, status:15, relationship:16, note:17, cardImage:18
 };
 
 let allData = [];
@@ -538,6 +538,7 @@ function buildCard(r, idx) {
   const mobile     = r[COL.mobile] || '';
   const office     = r[COL.office] || '';
   const fax        = r[COL.fax] || '';
+  const lineId     = r[COL.lineId] || '';
   const email      = r[COL.email] || '';
   const address    = r[COL.address] || '';
   const website    = r[COL.website] || '';
@@ -575,6 +576,7 @@ function buildCard(r, idx) {
   const details = [
     office  ? `<div class="detail-row"><span class="detail-icon">📞</span><div class="detail-body"><div class="detail-label">辦公電話</div><div class="detail-value"><a href="tel:${office}">${office}</a></div></div></div>` : '',
     fax     ? `<div class="detail-row"><span class="detail-icon">📠</span><div class="detail-body"><div class="detail-label">傳真</div><div class="detail-value">${fax}</div></div></div>` : '',
+    lineId  ? `<div class="detail-row"><span class="detail-icon">💬</span><div class="detail-body"><div class="detail-label">LINE ID</div><div class="detail-value">${lineId}</div></div></div>` : '',
     email   ? `<div class="detail-row"><span class="detail-icon">✉️</span><div class="detail-body"><div class="detail-label">電子郵件</div><div class="detail-value"><a href="mailto:${email}">${email}</a></div></div></div>` : '',
     address ? `<div class="detail-row"><span class="detail-icon">📍</span><div class="detail-body"><div class="detail-label">地址</div><div class="detail-value"><a href="https://www.google.com/maps/search/?api=1&query=${addressEnc}" target="_blank">${address}</a></div></div></div>` : '',
     website ? `<div class="detail-row"><span class="detail-icon">🌐</span><div class="detail-body"><div class="detail-label">官網</div><div class="detail-value"><a href="${website.startsWith('http')?website:'https://'+website}" target="_blank">${website}</a></div></div></div>` : '',
