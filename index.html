@@ -514,7 +514,9 @@ function renderResults() {
       r[COL.mobile].toLowerCase().includes(keyword) ||
       r[COL.email].toLowerCase().includes(keyword) ||
       r[COL.taxid].toString().includes(keyword) ||
-      r[COL.address].toLowerCase().includes(keyword)
+      r[COL.address].toLowerCase().includes(keyword) ||
+      r[COL.title].toLowerCase().includes(keyword) ||
+      r[COL.subTitle].toLowerCase().includes(keyword)
     );
   }
   if (filters.region)   results = results.filter(r => r[COL.region] === filters.region);
