@@ -508,6 +508,7 @@ function renderResults() {
   const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
   let results = allData;
   if (keyword) {
+    const isIdSearch = /^\d{4,}$/.test(keyword); // 至少4位數字才搜尋編號
     results = results.filter(r =>
       r[COL.name].toLowerCase().includes(keyword) ||
       r[COL.company].toLowerCase().includes(keyword) ||
@@ -516,7 +517,8 @@ function renderResults() {
       r[COL.taxid].toString().includes(keyword) ||
       r[COL.address].toLowerCase().includes(keyword) ||
       r[COL.title].toLowerCase().includes(keyword) ||
-      r[COL.subTitle].toLowerCase().includes(keyword)
+      r[COL.subTitle].toLowerCase().includes(keyword) ||
+      (isIdSearch && String(r[COL.id]).padStart(4,'0') === keyword)
     );
   }
   if (filters.region)   results = results.filter(r => r[COL.region] === filters.region);
