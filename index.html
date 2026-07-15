@@ -575,16 +575,26 @@ function buildCard(r, idx) {
     }
   }
 
+  // 需求1：判斷是否為多筆資料（含【或多個分隔符號），若是則不做連結
+  const hasMultiple = (val) => val.includes('【') || val.includes('/') && val.split('/').length > 2;
+
+  // 需求2：四位數編號
+  const formattedId = cardId ? String(cardId).padStart(4, '0') : '';
+
+  // 需求3：過濾括弧內容，取最後一個中文字
+  const cleanName = name.replace(/[\(（][^\)）]*[\)）]/g, '').trim();
+  const avatarChar = cleanName.match(/[\u4e00-\u9fff]/g)?.slice(-1)[0] || cleanName.slice(-1);
+
   const statusBadge = status ? `<span class="status-badge status-${status}">● ${status}</span>` : '';
 
   const details = [
     title    ? `<div class="detail-row"><span class="detail-icon">💼</span><div class="detail-body"><div class="detail-label">主職稱</div><div class="detail-value">${title}</div></div></div>` : '',
     subTitle ? `<div class="detail-row"><span class="detail-icon">💼</span><div class="detail-body"><div class="detail-label">其他職稱</div><div class="detail-value">${subTitle}</div></div></div>` : '',
-    office  ? `<div class="detail-row"><span class="detail-icon">📞</span><div class="detail-body"><div class="detail-label">辦公電話</div><div class="detail-value"><a href="tel:${office}">${office}</a></div></div></div>` : '',
+    office  ? `<div class="detail-row"><span class="detail-icon">📞</span><div class="detail-body"><div class="detail-label">辦公電話</div><div class="detail-value">${hasMultiple(office) ? office : `<a href="tel:${office}">${office}</a>`}</div></div></div>` : '',
     fax     ? `<div class="detail-row"><span class="detail-icon">📠</span><div class="detail-body"><div class="detail-label">傳真</div><div class="detail-value">${fax}</div></div></div>` : '',
     lineId  ? `<div class="detail-row"><span class="detail-icon">💬</span><div class="detail-body"><div class="detail-label">LINE ID</div><div class="detail-value">${lineId}</div></div></div>` : '',
-    email   ? `<div class="detail-row"><span class="detail-icon">✉️</span><div class="detail-body"><div class="detail-label">電子郵件</div><div class="detail-value"><a href="mailto:${email}">${email}</a></div></div></div>` : '',
-    address ? `<div class="detail-row"><span class="detail-icon">📍</span><div class="detail-body"><div class="detail-label">地址</div><div class="detail-value"><a href="https://www.google.com/maps/search/?api=1&query=${addressEnc}" target="_blank">${address}</a></div></div></div>` : '',
+    email   ? `<div class="detail-row"><span class="detail-icon">✉️</span><div class="detail-body"><div class="detail-label">電子郵件</div><div class="detail-value">${hasMultiple(email) ? email : `<a href="mailto:${email}">${email}</a>`}</div></div></div>` : '',
+    address ? `<div class="detail-row"><span class="detail-icon">📍</span><div class="detail-body"><div class="detail-label">地址</div><div class="detail-value">${hasMultiple(address) ? address : `<a href="https://www.google.com/maps/search/?api=1&query=${addressEnc}" target="_blank">${address}</a>`}</div></div></div>` : '',
     website ? `<div class="detail-row"><span class="detail-icon">🌐</span><div class="detail-body"><div class="detail-label">官網</div><div class="detail-value"><a href="${website.startsWith('http')?website:'https://'+website}" target="_blank">${website}</a></div></div></div>` : '',
     taxid   ? `<div class="detail-row"><span class="detail-icon">🏷️</span><div class="detail-body"><div class="detail-label">統一編號</div><div class="detail-value">${taxid}</div></div></div>` : '',
     status  ? `<div class="detail-row"><span class="detail-icon">📊</span><div class="detail-body"><div class="detail-label">開發狀態</div><div class="detail-value">${statusBadge}</div></div></div>` : '',
@@ -599,8 +609,8 @@ function buildCard(r, idx) {
   <div class="contact-card" style="animation-delay:${idx*0.03}s">
     <div class="card-header" onclick="toggleCard(${idx}, this)">
       <div class="avatar-wrap">
-        <div class="avatar">${name.slice(-1)}</div>
-        ${cardId?`<span class="avatar-id">#${cardId}</span>`:''}
+        <div class="avatar">${avatarChar}</div>
+        ${formattedId?`<span class="avatar-id">#${formattedId}</span>`:''}
       </div>
       <div class="card-main">
         <div class="card-name">${name}</div>
