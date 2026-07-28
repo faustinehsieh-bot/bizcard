@@ -343,10 +343,10 @@ let activePanel = null;
 // ── HEADER HEIGHT OFFSET ──
 function updateHeaderOffset() {
   const header = document.querySelector('.sticky-header');
-  if (header) {
+  const list = document.querySelector('.result-list');
+  if (header && list) {
     const h = header.offsetHeight;
-    document.documentElement.style.setProperty('--header-height', h + 'px');
-    document.querySelector('.result-list').style.marginTop = h + 'px';
+    list.style.marginTop = h + 'px';
   }
 }
 
@@ -475,7 +475,7 @@ function togglePanel(type) {
   ['region','industry','status'].forEach(t => document.getElementById(`panel-${t}`).classList.remove('open'));
   if (!isOpen) panel.classList.add('open');
   activePanel = isOpen ? null : type;
-  setTimeout(updateHeaderOffset, 50);
+  requestAnimationFrame(() => requestAnimationFrame(updateHeaderOffset));
 }
 
 function setFilterValue(type, value, btn) {
@@ -493,6 +493,7 @@ function setFilterValue(type, value, btn) {
   panel.classList.remove('open');
   renderResults();
   updateResetBtn();
+  requestAnimationFrame(() => requestAnimationFrame(updateHeaderOffset));
 }
 
 function setFilter(type) {
@@ -505,10 +506,14 @@ function setFilter(type) {
     document.getElementById('chip-all').classList.add('active');
     renderResults();
     updateResetBtn();
+    requestAnimationFrame(() => requestAnimationFrame(updateHeaderOffset));
   }
 }
 
-function resetAll() { clearSearch(); setFilter('all'); }
+function resetAll() {
+  clearSearch();
+  setFilter('all');
+}
 
 function clearSearch() {
   document.getElementById('searchInput').value = '';
