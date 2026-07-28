@@ -55,7 +55,7 @@ body {
 .topbar-name { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
 
 /* ── SEARCH BOX ── */
-.sticky-header { position: sticky; top: 0; z-index: 99; width: 100%; max-width: 100vw; box-shadow: 0 2px 8px rgba(26,22,20,0.08); }
+.sticky-header { position: fixed; top: 0; left: 0; right: 0; z-index: 99; width: 100%; box-shadow: 0 2px 8px rgba(26,22,20,0.08); background: var(--bg); }
 .search-wrap { background: var(--teal); padding: 8px 16px 10px; width: 100%; max-width: 100vw; }
 .search-box { display: flex; align-items: center; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 0 14px; gap: 10px; transition: background 0.2s; }
 .search-box:focus-within { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.6); }
@@ -88,7 +88,7 @@ body {
 .reset-all.show { display: block; }
 
 /* ── RESULT LIST ── */
-.result-list { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 100vw; overflow-x: hidden; }
+.result-list { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 100vw; overflow-x: hidden; margin-top: var(--header-height, 160px); }
 
 /* ── CONTACT CARD ── */
 .contact-card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); animation: slideUp 0.2s ease both; }
@@ -340,6 +340,16 @@ let allData = [];
 let filters = { region: null, industry: null, status: null };
 let activePanel = null;
 
+// ── HEADER HEIGHT OFFSET ──
+function updateHeaderOffset() {
+  const header = document.querySelector('.sticky-header');
+  if (header) {
+    const h = header.offsetHeight;
+    document.documentElement.style.setProperty('--header-height', h + 'px');
+    document.querySelector('.result-list').style.marginTop = h + 'px';
+  }
+}
+
 // ── PASSWORD ──
 const PASSWORD_HASH = '5429fbf84a2b2ae27c2e7c7e3119e8015f3fdd45b06ba56e55b1f6542bc6c88b'; // 預設密碼: password，請修改
 
@@ -404,6 +414,8 @@ function initApp() {
   document.getElementById('sheetIdInput').value = saved;
   localStorage.setItem('sheetId', saved);
   loadData(saved);
+  updateHeaderOffset();
+  window.addEventListener('resize', updateHeaderOffset);
 
   document.getElementById('searchInput').addEventListener('input', (e) => {
     const val = e.target.value;
@@ -463,6 +475,7 @@ function togglePanel(type) {
   ['region','industry','status'].forEach(t => document.getElementById(`panel-${t}`).classList.remove('open'));
   if (!isOpen) panel.classList.add('open');
   activePanel = isOpen ? null : type;
+  setTimeout(updateHeaderOffset, 50);
 }
 
 function setFilterValue(type, value, btn) {
