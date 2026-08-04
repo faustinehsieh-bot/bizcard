@@ -91,7 +91,7 @@ body {
 .result-list { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 100vw; overflow-x: hidden; margin-top: var(--header-height, 160px); }
 
 /* ── CONTACT CARD ── */
-.contact-card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); animation: slideUp 0.15s ease both; }
+.contact-card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); animation: slideUp 0.2s ease both; }
 @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 .card-header { padding: 14px 16px 14px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; position: relative; }
 .avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -634,7 +634,7 @@ function buildCard(r, idx) {
   const SVG_IMG_BTN = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`;
 
   return `
-  <div class="contact-card"${idx < 8 ? ` style="animation-delay:${idx*0.04}s"` : ''}>
+  <div class="contact-card" style="animation-delay:${idx*0.03}s">
     <div class="card-header" onclick="toggleCard(${idx}, this)">
       <div class="avatar-wrap">
         <div class="avatar">${avatarChar}</div>
