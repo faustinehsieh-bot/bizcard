@@ -279,13 +279,12 @@ body {
   <button class="filter-chip active" id="chip-all" onclick="setFilter('all')">全部 <span class="chip-count" id="count-all">0</span></button>
   <button class="filter-chip" id="chip-region" onclick="togglePanel('region')">📍 地區 ▾</button>
   <button class="filter-chip" id="chip-industry" onclick="togglePanel('industry')">🏢 產業 ▾</button>
-  <button class="filter-chip" id="chip-status" onclick="togglePanel('status')">📊 狀態 ▾</button>
 </div>
 
 <!-- FILTER PANELS -->
 <div class="filter-panel" id="panel-region"><div class="filter-panel-title">選擇地區</div></div>
 <div class="filter-panel" id="panel-industry"><div class="filter-panel-title">選擇產業</div></div>
-<div class="filter-panel" id="panel-status"><div class="filter-panel-title">選擇開發狀態</div></div>
+<div class="filter-panel" id="panel-status" style="display:none!important"><div class="filter-panel-title">選擇開發狀態</div></div>
 
 <!-- STATS -->
 <div class="stats-bar">
@@ -615,7 +614,7 @@ function buildCard(r, idx) {
 
   const details = [
     title    ? `<div class="detail-row"><span class="detail-icon">💼</span><div class="detail-body"><div class="detail-label">主職稱</div><div class="detail-value">${title}</div></div></div>` : '',
-    subTitle ? `<div class="detail-row"><span class="detail-icon">💼</span><div class="detail-body"><div class="detail-label">其他職稱</div><div class="detail-value">${subTitle}</div></div></div>` : '',
+    subTitle ? `<div class="detail-row"><span class="detail-icon">🪪</span><div class="detail-body"><div class="detail-label">其他職稱</div><div class="detail-value">${subTitle}</div></div></div>` : '',
     office  ? `<div class="detail-row"><span class="detail-icon">📞</span><div class="detail-body"><div class="detail-label">辦公電話</div><div class="detail-value">${hasMultiple(office) ? office : `<a href="tel:${office}">${office}</a>`}</div></div></div>` : '',
     fax     ? `<div class="detail-row"><span class="detail-icon">📠</span><div class="detail-body"><div class="detail-label">傳真</div><div class="detail-value">${fax}</div></div></div>` : '',
     lineId  ? `<div class="detail-row"><span class="detail-icon">💬</span><div class="detail-body"><div class="detail-label">LINE ID</div><div class="detail-value">${lineId}</div></div></div>` : '',
@@ -659,16 +658,12 @@ function toggleCard(idx, headerEl) {
   const isOpen = detail.classList.contains('open');
   detail.classList.toggle('open');
   if (!isOpen) {
-    // 展開後等動畫完成再捲動，讓整張卡片盡量完整顯示
     setTimeout(() => {
       const card = headerEl.closest('.contact-card');
-      const cardRect = card.getBoundingClientRect();
-      const detailHeight = detail.scrollHeight;
-      const viewportHeight = window.innerHeight;
-      const cardBottom = cardRect.top + cardRect.height + detailHeight;
-      if (cardBottom > viewportHeight * 0.85) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      const stickyHeader = document.querySelector('.sticky-header');
+      const headerHeight = stickyHeader ? stickyHeader.offsetHeight : 0;
+      const cardTop = card.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: cardTop - headerHeight - 8, behavior: 'smooth' });
     }, 50);
   }
 }
