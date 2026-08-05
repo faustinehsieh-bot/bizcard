@@ -376,8 +376,38 @@ function toggleSort() {
 }
 
 function collapseAll() {
-  document.querySelectorAll('.card-detail.open').forEach(d => d.classList.remove('open'));
+  // 找到目前畫面中最上方的已開卡片
+  const stickyHeight = document.querySelector('.sticky-header')?.offsetHeight || 0;
+  const openCards = [...document.querySelectorAll('.card-detail.open')];
+  
+  let topCard = null;
+  let minTop = Infinity;
+  openCards.forEach(detail => {
+    const card = detail.closest('.contact-card');
+    if (card) {
+      const rect = card.getBoundingClientRect();
+      if (rect.top >= stickyHeight && rect.top < minTop) {
+        minTop = rect.top;
+        topCard = card;
+      } else if (!topCard) {
+        // 如果沒有在畫面內的，取第一張
+        topCard = card;
+      }
+    }
+  });
+
+  // 收起所有卡片
+  openCards.forEach(d => d.classList.remove('open'));
   document.getElementById('collapseAllBtn').style.display = 'none';
+
+  // 捲回到那張卡片的位置
+  if (topCard) {
+    setTimeout(() => {
+      const cardTop = topCard.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: cardTop - stickyHeight - 8, behavior: 'smooth' });
+    }, 30);
+  }
+
   requestAnimationFrame(() => requestAnimationFrame(updateHeaderOffset));
 }
 
