@@ -84,7 +84,15 @@ body {
 .stats-bar { padding: 6px 20px; display: flex; align-items: center; justify-content: space-between; }
 .stats-count { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink3); }
 .stats-count span { color: var(--teal); font-weight: 500; font-size: 14px; }
-.reset-all { font-size: 12px; color: var(--red); cursor: pointer; padding: 4px 8px; border-radius: 6px; background: none; border: none; font-family: 'Noto Sans TC', sans-serif; display: none; }
+.filter-chip.sort-asc::after { content: ' ↑'; }
+.filter-chip.sort-desc::after { content: ' ↓'; }
+.collapse-all-btn {
+  font-size: 12px; color: var(--teal); cursor: pointer;
+  padding: 4px 8px; border-radius: 6px;
+  background: var(--teal-light); border: 1px solid var(--teal);
+  font-family: 'Noto Sans TC', sans-serif; white-space: nowrap;
+}
+.reset-all { font-size: 12px; color: var(--red); cursor: pointer; padding: 4px 8px; border-radius: 6px; background: none; border: none; font-family: 'Noto Sans TC', sans-serif; display: none; white-space: nowrap; }
 .reset-all.show { display: block; }
 
 /* ── RESULT LIST ── */
@@ -277,6 +285,7 @@ body {
 <!-- FILTER CHIPS -->
 <div class="filter-bar" id="filterBar">
   <button class="filter-chip active" id="chip-all" onclick="setFilter('all')">全部 <span class="chip-count" id="count-all">0</span></button>
+  <button class="filter-chip" id="chip-sort" onclick="toggleSort()">↑↓ 編號</button>
   <button class="filter-chip" id="chip-region" onclick="togglePanel('region')">📍 地區 ▾</button>
   <button class="filter-chip" id="chip-industry" onclick="togglePanel('industry')">🏢 產業 ▾</button>
 </div>
@@ -289,7 +298,10 @@ body {
 <!-- STATS -->
 <div class="stats-bar">
   <div class="stats-count">共 <span id="resultCount">0</span> 筆結果</div>
-  <button class="reset-all" id="resetAllBtn" onclick="resetAll()">✕ 清除所有篩選</button>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="collapse-all-btn" id="collapseAllBtn" onclick="collapseAll()" style="display:none;">▲ 全部收起</button>
+    <button class="reset-all" id="resetAllBtn" onclick="resetAll()">✕ 清除篩選</button>
+  </div>
 </div>
 
 </div><!-- END STICKY HEADER -->
@@ -338,8 +350,29 @@ const COL = {
 let allData = [];
 let filters = { region: null, industry: null, status: null };
 let activePanel = null;
+let sortOrder = 'asc'; // 'asc' = 編號小→大, 'desc' = 編號大→小
 
 // ── HEADER HEIGHT OFFSET ──
+function toggleSort() {
+  sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+  const btn = document.getElementById('chip-sort');
+  btn.classList.remove('sort-asc', 'sort-desc');
+  btn.classList.add(sortOrder === 'asc' ? 'sort-asc' : 'sort-desc');
+  btn.textContent = sortOrder === 'asc' ? '↑↓ 編號 ↑' : '↑↓ 編號 ↓';
+  renderResults();
+}
+
+function collapseAll() {
+  document.querySelectorAll('.card-detail.open').forEach(d => d.classList.remove('open'));
+  document.getElementById('collapseAllBtn').style.display = 'none';
+  requestAnimationFrame(() => requestAnimationFrame(updateHeaderOffset));
+}
+
+function updateCollapseBtn() {
+  const hasOpen = document.querySelector('.card-detail.open');
+  document.getElementById('collapseAllBtn').style.display = hasOpen ? 'block' : 'none';
+}
+
 function updateHeaderOffset() {
   const header = document.querySelector('.sticky-header');
   const list = document.querySelector('.result-list');
@@ -547,6 +580,13 @@ function renderResults() {
   if (filters.region)   results = results.filter(r => r[COL.region] === filters.region);
   if (filters.industry) results = results.filter(r => r[COL.industry] === filters.industry);
   if (filters.status)   results = results.filter(r => r[COL.status] === filters.status);
+
+  // 排序
+  results.sort((a, b) => {
+    const idA = parseInt(a[COL.id]) || 0;
+    const idB = parseInt(b[COL.id]) || 0;
+    return sortOrder === 'asc' ? idA - idB : idB - idA;
+  });
   document.getElementById('resultCount').textContent = results.length;
   updateResetBtn();
   const list = document.getElementById('resultList');
@@ -660,6 +700,7 @@ function toggleCard(idx, headerEl) {
   const detail = document.getElementById(`detail-${idx}`);
   const isOpen = detail.classList.contains('open');
   detail.classList.toggle('open');
+  updateCollapseBtn();
   if (!isOpen) {
     setTimeout(() => {
       const card = headerEl.closest('.contact-card');
