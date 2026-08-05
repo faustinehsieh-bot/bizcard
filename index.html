@@ -376,36 +376,40 @@ function toggleSort() {
 }
 
 function collapseAll() {
-  // 找到目前畫面中最上方的已開卡片
   const stickyHeight = document.querySelector('.sticky-header')?.offsetHeight || 0;
   const openCards = [...document.querySelectorAll('.card-detail.open')];
-  
-  let topCard = null;
-  let minTop = Infinity;
+
+  // 找到目前畫面中最靠近 header 底部的已開卡片，記錄它的 scrollY 絕對位置
+  let targetCard = null;
+  let minDist = Infinity;
   openCards.forEach(detail => {
     const card = detail.closest('.contact-card');
-    if (card) {
-      const rect = card.getBoundingClientRect();
-      if (rect.top >= stickyHeight && rect.top < minTop) {
-        minTop = rect.top;
-        topCard = card;
-      } else if (!topCard) {
-        // 如果沒有在畫面內的，取第一張
-        topCard = card;
-      }
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const absTop = rect.top + window.scrollY;
+    // 找畫面中 header 以下最靠近頂部的卡片
+    const distFromHeader = rect.top - stickyHeight;
+    if (distFromHeader >= -card.offsetHeight && distFromHeader < minDist) {
+      minDist = distFromHeader;
+      targetCard = { el: card, absTop };
     }
   });
 
-  // 收起所有卡片
+  // 若沒找到畫面內的，取第一張
+  if (!targetCard && openCards.length > 0) {
+    const card = openCards[0].closest('.contact-card');
+    if (card) targetCard = { el: card, absTop: card.getBoundingClientRect().top + window.scrollY };
+  }
+
+  // 先收起所有卡片
   openCards.forEach(d => d.classList.remove('open'));
   document.getElementById('collapseAllBtn').style.display = 'none';
 
-  // 捲回到那張卡片的位置
-  if (topCard) {
-    setTimeout(() => {
-      const cardTop = topCard.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({ top: cardTop - stickyHeight - 8, behavior: 'smooth' });
-    }, 30);
+  // 收起後卡片變矮，重新用記錄的絕對位置捲動
+  if (targetCard) {
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: targetCard.absTop - stickyHeight - 8, behavior: 'smooth' });
+    });
   }
 
   requestAnimationFrame(() => requestAnimationFrame(updateHeaderOffset));
